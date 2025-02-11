@@ -39,3 +39,17 @@
    ```
 
 # Exo 2 : Installation d'Ansible via un PPA
+
+1. **Ajout du dépot PPA** :
+   ```sh
+   vagrant@ubuntu:~$ sudo apt-add-repository ppa:ansible/ansible
+   ```
+2. **Installation de Ansible** :
+   ```sh
+   vagrant@ubuntu:~$ sudo apt install ansible -y
+   ```
+3. **Notez la version d’Ansible** :
+   ```sh
+   vagrant@ubuntu:~$ ansible --version
+   ansible [core 2.17.8]
+   ```
