@@ -108,3 +108,46 @@
    192.168.56.30  target02.sandbox.lan   target02
    192.168.56.40  target03.sandbox.lan   target03
    ```
+2. **Configurez l’authentification par clé SSH avec les trois Target Hosts** :
+
+   Tout d'abord je génère une clé sur le controleur :
+   ```sh
+   vagrant@control:~$ ssh-keygen
+   ```
+   Ensuite je copie ma clé publique sur l'ensemble de mes targets :
+   ```sh
+   vagrant@control:~$ for target in target01 target02 target03; do ssh-copy-id vagrant@$target; done
+   ```
+3. **Installez Ansible** :   
+   ```sh
+   vagrant@control:~$ sudo apt install ansible -y
+   ```
+
+4. **Envoyez un premier ping Ansible sans configuration** :   
+<div style="color: green;">
+   ```sh
+   vagrant@control:~$ ansible all -i target01,target02,target03 -m ping
+   target03 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+    }
+    target02 | SUCCESS => {
+        "ansible_facts": {
+            "discovered_interpreter_python": "/usr/bin/python3"
+        },
+        "changed": false,
+        "ping": "pong"
+    }
+    target01 | SUCCESS => {
+        "ansible_facts": {
+            "discovered_interpreter_python": "/usr/bin/python3"
+        },
+        "changed": false,
+        "ping": "pong"
+    }
+
+</div> ```
+   
