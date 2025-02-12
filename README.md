@@ -122,9 +122,7 @@
    ```sh
    vagrant@control:~$ sudo apt install ansible -y
    ```
-
 4. **Envoyez un premier ping Ansible sans configuration** :   
-<div style="color: green;">
    ```sh
    vagrant@control:~$ ansible all -i target01,target02,target03 -m ping
    target03 | SUCCESS => {
@@ -135,19 +133,18 @@
     "ping": "pong"
     }
     target02 | SUCCESS => {
-        "ansible_facts": {
-            "discovered_interpreter_python": "/usr/bin/python3"
-        },
-        "changed": false,
-        "ping": "pong"
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
     }
     target01 | SUCCESS => {
-        "ansible_facts": {
-            "discovered_interpreter_python": "/usr/bin/python3"
-        },
-        "changed": false,
-        "ping": "pong"
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
     }
-
-</div> ```
+   ```
    
