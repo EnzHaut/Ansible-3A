@@ -147,4 +147,147 @@
     "ping": "pong"
     }
    ```
-   
+
+5. **Création du fichier de configuration Ansible et vérification de sa prise en compte par Ansible** :
+   ```sh
+   vagrant@control:~/monprojet$ cat ansible.cfg
+   [defaults]
+   inventory = ./hosts
+   log_path = ~/journal/ansible.log
+   vagrant@control:~/monprojet$ ansible --version
+   ansible 2.10.8
+   ```
+
+6. **Spécifiez un inventaire nommé hosts** :
+   ```sh
+      vagrant@control:~/monprojet$ cat hosts
+   [testlab]
+   target01
+   target02
+   target03
+   ```
+7. **Activez la journalisation dans ~/journal/ansible.log** :
+   ```sh
+      vagrant@control:~/monprojet$ cat hosts
+   [testlab]
+   target01
+   target02
+   target03
+   ```
+8. **Testez la journalisation** :
+```sh
+vagrant@control:~/monprojet$ ansible all -i target01,target02,target03 -m ping
+target02 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+target01 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+target03 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+vagrant@control:~/monprojet$ cat ~/journal/ansible.log
+2025-02-12 10:59:33,094 p=3569 u=vagrant n=ansible | target02 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+2025-02-12 10:59:33,096 p=3569 u=vagrant n=ansible | target01 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+2025-02-12 10:59:33,308 p=3569 u=vagrant n=ansible | target03 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+```
+
+9. **Définissez explicitement l’utilisateur vagrant pour la connexion à vos cibles** :
+   ```sh
+   vagrant@control:~/monprojet$ cat hosts
+   [testlab]
+   target01
+   target02
+   target03
+
+   [testlab:vars]
+   ansible_user=vagrant
+   ```
+
+10. **Envoyez un ping Ansible vers le groupe de machines [all]** :
+   ```sh
+vagrant@control:~/monprojet$ ansible all -m ping
+target02 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+target01 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+target03 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+   ```
+11. **Spécifiez un inventaire nommé hosts** :
+   ```sh
+      vagrant@control:~/monprojet$ cat hosts
+   [testlab]
+   target01
+   target02
+   target03
+   ```
+
+12. **Définissez l’élévation des droits pour l’utilisateur vagrant sur les Target Hosts** :
+   ```sh
+   [testlab:vars]
+   ansible_user=vagrant
+   ansible_become=True
+
+   ```
+13. **Affichez la première ligne du fichier /etc/shadow sur tous les Target Hosts** :
+   ```sh
+vagrant@control:~/monprojet$ ansible all -a "head -n 3 /etc/shadow"
+target01 | CHANGED | rc=0 >>
+root:*:19769:0:99999:7:::
+daemon:*:19769:0:99999:7:::
+bin:*:19769:0:99999:7:::
+target02 | CHANGED | rc=0 >>
+root:*:19769:0:99999:7:::
+daemon:*:19769:0:99999:7:::
+bin:*:19769:0:99999:7:::
+target03 | CHANGED | rc=0 >>
+root:*:19769:0:99999:7:::
+daemon:*:19769:0:99999:7:::
+bin:*:19769:0:99999:7:::
+```
