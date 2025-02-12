@@ -1,6 +1,16 @@
-# Exo 1 : Ansible par la pratique
+# Table des Matières
 
-## Installation
+1. [Partie 1: Ansible par la Pratique – Installation](#partie-1-ansible-par-la-pratique--installation)
+    - [Exo 1 : Ansible par la pratique](#exo-1--ansible-par-la-pratique)
+    - [Exo 2 : Installation d'Ansible via un PPA](#exo-2--installation-dansible-via-un-ppa)
+    - [Exo 3 : Installation d'Ansible via un Environnement Virtuel Python](#exo-3--installation-dansible-via-un-environnement-virtuel-python)
+2. [Partie 2: Ansible par la pratique – Authentification](#partie-2--ansible-par-la-pratique--authentification)
+3. [Partie 3: Ansible par la pratique – Configuration de base](##partie-3--ansible-par-la-pratique--configuration-de-base)
+
+---
+# Partie 1: Ansible par la Pratique – Installation
+
+## Exo 1 : Ansible par la pratique
 
 1. **Démarrez la VM Ubuntu depuis le répertoire `atelier-01`** :
    ```sh
@@ -38,7 +48,7 @@
    ema@localhost:atelier-01] $ vagrant destroy ubuntu -y
    ```
 
-# Exo 2 : Installation d'Ansible via un PPA
+## Exo 2 : Installation d'Ansible via un PPA
 
 1. **Ajout du dépot PPA** :
    ```sh
@@ -53,9 +63,8 @@
    vagrant@ubuntu:~$ ansible --version
    ansible [core 2.17.8]
    ```
-
-
-   # Exo 3 : Installation d'Ansible via un Environnement Virtuel Python
+  
+## Exo 3 : Installation d'Ansible via un Environnement Virtuel Python
 
  1. **Connexion à la VM Rocky** :
    ```sh
@@ -87,3 +96,8 @@
    (ansible) [vagrant@rocky ~]$ ansible --version
    ansible [core 2.15.13]
    ```
+---
+# Partie 2 : Ansible par la pratique – Authentification
+
+---
+# Partie 3 : Ansible par la Pratique – Configuration de base
