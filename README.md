@@ -101,3 +101,10 @@
 
 ---
 # Partie 3 : Ansible par la Pratique – Configuration de base
+
+1. **Éditez /etc/hosts de manière à ce que les Target Hosts soient joignables par leur nom d’hôte simple.** :
+   ```sh
+   192.168.56.20  target01.sandbox.lan   target01
+   192.168.56.30  target02.sandbox.lan   target02
+   192.168.56.40  target03.sandbox.lan   target03
+   ```
