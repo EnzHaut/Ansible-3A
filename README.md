@@ -99,6 +99,73 @@
 ---
 # Partie 2 : Ansible par la pratique – Authentification
 
+1. **Modification du fichier /etc/hosts** :
+   ```sh
+   127.0.0.1      localhost.localdomain  localhost
+   192.168.56.10  control.sandbox.lan    control
+   192.168.56.20  target01.sandbox.lan   target01
+   192.168.56.30  target02.sandbox.lan   target02
+   192.168.56.40  target03.sandbox.lan   target03
+   ```
+2. **Test de connexion aux VMs** :
+   ```sh
+   vagrant@control:~$ for HOST in target01 target02 target03; do ping -c 1 -q $HOST; done
+   PING target01.sandbox.lan (192.168.56.20) 56(84) bytes of data.
+
+   --- target01.sandbox.lan ping statistics ---
+   1 packets transmitted, 1 received, 0% packet loss, time 0ms
+   rtt min/avg/max/mdev = 2.270/2.270/2.270/0.000 ms
+   PING target02.sandbox.lan (192.168.56.30) 56(84) bytes of data.
+
+   --- target02.sandbox.lan ping statistics ---
+   1 packets transmitted, 1 received, 0% packet loss, time 0ms
+   rtt min/avg/max/mdev = 1.495/1.495/1.495/0.000 ms
+   PING target03.sandbox.lan (192.168.56.40) 56(84) bytes of data.
+
+   --- target03.sandbox.lan ping statistics ---
+   1 packets transmitted, 1 received, 0% packet loss, time 0ms
+   rtt min/avg/max/mdev = 2.072/2.072/2.072/0.000 ms
+   ```
+
+3. **Ajouter les targets aux hosts connus** :
+   ```sh
+   vagrant@control:~$ ssh-keyscan -t rsa target01 target02 target03 >> .ssh/known_hosts
+   # target03:22 SSH-2.0-OpenSSH_8.9p1 Ubuntu-3ubuntu0.10
+   # target02:22 SSH-2.0-OpenSSH_8.9p1 Ubuntu-3ubuntu0.10
+   # target01:22 SSH-2.0-OpenSSH_8.9p1 Ubuntu-3ubuntu0.10
+   ```
+4. **Génération des clés et ajout de la clé publique sur les VMs** :
+   ```sh
+   vagrant@control:~$ ssh-keygen
+   vagrant@control:~$ ssh-copy-id target01
+   vagrant@control:~$ ssh-copy-id target02
+   vagrant@control:~$ ssh-copy-id target03
+   ```
+5. **¨Ping avec Ansible pour valider** :
+   ```sh
+   vagrant@control:~$ ansible all -i target01,target02,target03 -m ping
+   target01 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+   }
+   target03 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+   }
+   target02 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+   }
+   ```
 ---
 # Partie 3 : Ansible par la Pratique – Configuration de base
 
