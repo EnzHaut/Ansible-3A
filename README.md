@@ -6,7 +6,8 @@
     - [Exo 3 : Installation d'Ansible via un Environnement Virtuel Python](#exo-3--installation-dansible-via-un-environnement-virtuel-python)
 2. [Partie 2: Ansible par la pratique – Authentification](#partie-2--ansible-par-la-pratique--authentification)
 3. [Partie 3: Ansible par la pratique – Configuration de base](##partie-3--ansible-par-la-pratique--configuration-de-base)
-
+4. [Partie 4: Ansible par la pratique – Idempotence](##partie-4--ansible-par-la-pratique--Idempotence)
+5. [Partie 5: Ansible par la pratique – Playbooks](##partie-5--ansible-par-la-pratique--Playbooks)
 ---
 # Partie 1: Ansible par la Pratique – Installation
 
@@ -169,7 +170,7 @@
 ---
 # Partie 3 : Ansible par la Pratique – Configuration de base
 
-1. **Éditez /etc/hosts de manière à ce que les Target Hosts soient joignables par leur nom d’hôte simple.** :
+1. **Éditez /etc/hosts de manière à ce que les Target Hosts soient joignables par leur nom d’hôte simple** :
    ```sh
    192.168.56.20  target01.sandbox.lan   target01
    192.168.56.30  target02.sandbox.lan   target02
@@ -189,6 +190,7 @@
    ```sh
    vagrant@control:~$ sudo apt install ansible -y
    ```
+
 4. **Envoyez un premier ping Ansible sans configuration** :   
    ```sh
    vagrant@control:~$ ansible all -i target01,target02,target03 -m ping
@@ -214,10 +216,9 @@
     "ping": "pong"
     }
    ```
-
-5. **Création du fichier de configuration Ansible et vérification de sa prise en compte par Ansible** :
+5. **Création du fichier de configuration Ansible et vérification de sa prise en compte par Ansible** :   
    ```sh
-   vagrant@control:~/monprojet$ cat ansible.cfg
+   vagrant@control:~/monprojet$ cat ansible.cfg 
    [defaults]
    inventory = ./hosts
    log_path = ~/journal/ansible.log
@@ -225,17 +226,17 @@
    ansible 2.10.8
    ```
 
-6. **Spécifiez un inventaire nommé hosts** :
+6. **Spécifiez un inventaire nommé hosts** : 
    ```sh
-      vagrant@control:~/monprojet$ cat hosts
+      vagrant@control:~/monprojet$ cat hosts 
    [testlab]
    target01
    target02
    target03
    ```
-7. **Activez la journalisation dans ~/journal/ansible.log** :
+7. **Activez la journalisation dans ~/journal/ansible.log** : 
    ```sh
-      vagrant@control:~/monprojet$ cat hosts
+      vagrant@control:~/monprojet$ cat hosts 
    [testlab]
    target01
    target02
@@ -265,7 +266,7 @@ target03 | SUCCESS => {
     "changed": false,
     "ping": "pong"
 }
-vagrant@control:~/monprojet$ cat ~/journal/ansible.log
+vagrant@control:~/monprojet$ cat ~/journal/ansible.log 
 2025-02-12 10:59:33,094 p=3569 u=vagrant n=ansible | target02 | SUCCESS => {
     "ansible_facts": {
         "discovered_interpreter_python": "/usr/bin/python3"
@@ -289,7 +290,7 @@ vagrant@control:~/monprojet$ cat ~/journal/ansible.log
 }
 ```
 
-9. **Définissez explicitement l’utilisateur vagrant pour la connexion à vos cibles** :
+9. **Définissez explicitement l’utilisateur vagrant pour la connexion à vos cibles** :   
    ```sh
    vagrant@control:~/monprojet$ cat hosts
    [testlab]
@@ -301,7 +302,7 @@ vagrant@control:~/monprojet$ cat ~/journal/ansible.log
    ansible_user=vagrant
    ```
 
-10. **Envoyez un ping Ansible vers le groupe de machines [all]** :
+10. **Envoyez un ping Ansible vers le groupe de machines [all]** : 
    ```sh
 vagrant@control:~/monprojet$ ansible all -m ping
 target02 | SUCCESS => {
@@ -326,23 +327,23 @@ target03 | SUCCESS => {
     "ping": "pong"
 }
    ```
-11. **Spécifiez un inventaire nommé hosts** :
+11. **Spécifiez un inventaire nommé hosts** : 
    ```sh
-      vagrant@control:~/monprojet$ cat hosts
+      vagrant@control:~/monprojet$ cat hosts 
    [testlab]
    target01
    target02
    target03
    ```
 
-12. **Définissez l’élévation des droits pour l’utilisateur vagrant sur les Target Hosts** :
+12. **Définissez l’élévation des droits pour l’utilisateur vagrant sur les Target Hosts** : 
    ```sh
    [testlab:vars]
    ansible_user=vagrant
    ansible_become=True
-
+   
    ```
-13. **Affichez la première ligne du fichier /etc/shadow sur tous les Target Hosts** :
+13. **Affichez la première ligne du fichier /etc/shadow sur tous les Target Hosts** : 
    ```sh
 vagrant@control:~/monprojet$ ansible all -a "head -n 3 /etc/shadow"
 target01 | CHANGED | rc=0 >>
@@ -358,3 +359,10 @@ root:*:19769:0:99999:7:::
 daemon:*:19769:0:99999:7:::
 bin:*:19769:0:99999:7:::
 ```
+
+---
+# Partie 4: Ansible par la pratique – Idempotence
+
+---
+# Partie 5: Ansible par la pratique – Playbooks
+
