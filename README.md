@@ -436,3 +436,170 @@ bin:*:19769:0:99999:7:::
 ---
 # Partie 5: Ansible par la pratique – Playbooks
 
+1. **Connexion au Control Host** : 
+   ```sh
+   [ema@localhost:atelier-10] $ vagrant ssh ansible
+   ```
+
+2. **Changement de répertoire pour etre dans le projet** : 
+   ```sh
+   vagrant@ansible ~]$ cd ansible/projets/ema/
+   direnv: loading ~/ansible/projets/ema/.envrc
+   direnv: export +ANSIBLE_CONFIG
+   ```
+
+Écrivez trois playbooks :
+
+Un premier playbook apache-debian.yml qui installe Apache sur l’hôte debian avec une page personnalisée Apache web server running on Debian Linux.
+
+3. **Playbook apache-debian :**
+   ```sh
+   [vagrant@ansible ema]$ cat apache-debian.yml 
+   ---  # apache-01.yml
+
+   - hosts: debian
+
+   tasks:
+
+   - name: Update package information
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install Apache
+      apt:
+        name: apache2
+
+    - name: Start & enable Apache
+      service:
+        name: apache2
+        state: started
+        enabled: true
+
+    - name: Install custom web page
+      copy:
+        dest: /var/www/html/index.html
+        mode: 0644
+        content: |
+          <!doctype html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <title>Test</title>
+            </head>
+            <body>
+              <h1>My first Ansible-managed website</h1>
+            </body>
+          </html>
+   ```
+Vérification que c'est bien up :
+   ```sh
+   [vagrant@ansible ema]$ curl debian
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Test</title>
+  </head>
+  <body>
+    <h1>My first Ansible-managed website</h1>
+  </body>
+</html>
+   ```
+
+4. **Playbook apache-rocky :** : 
+   ```sh
+   [[vagrant@ansible ema]$ cat apache-rocky.yml 
+   ---
+   - hosts: rocky
+   tasks:
+    - name: install httpd (apache2)
+      dnf:
+        name: httpd
+        state: latest
+
+    - name: start and enable httpd service
+      service:
+        name: httpd
+        state: started
+        enabled: true
+
+    - name: edit de la page web
+      copy:
+        dest: /var/www/html/index.html
+        mode: 0644
+        content : |
+         <!doctype html>
+         <html>
+           <head>
+             <meta charset="utf-8">
+             <title>Test</title>
+           </head>
+           <body>
+               <h1>Apache web server running on Rocky Linux</h1>
+           </body>
+         </html>
+   ```
+Vérification que c'est bien up :
+   ```sh
+   [vagrant@ansible ema]$ curl rocky
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Test</title>
+  </head>
+  <body>
+      <h1>Apache web server running on Rocky Linux</h1>
+  </body>
+</html>
+   ```
+4. **Playbook apache-suse :** : 
+   ```sh
+   [[vagrant@ansible ema]$ cat apache-suse.yml 
+   ---
+   - hosts: suse
+   tasks:
+    - name: install httpd (apache2)
+      dnf:
+        name: httpd
+        state: latest
+
+    - name: start and enable httpd service
+      service:
+        name: httpd
+        state: started
+        enabled: true
+
+    - name: edit de la page web
+      copy:
+        dest: /var/www/html/index.html
+        mode: 0644
+        content : |
+         <!doctype html>
+         <html>
+           <head>
+             <meta charset="utf-8">
+             <title>Test</title>
+           </head>
+           <body>
+               <h1>Apache web server running on SUSE Linux</h1>
+           </body>
+         </html>
+   ```
+Vérification que c'est bien up :
+   ```sh
+[vagrant@ansible playbooks]$ curl suse
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Test</title>
+  </head>
+  <body>
+      <h1>Apache web server running on SUSE Linux</h1>
+  </body>
+</html>
+   ```
+
+
