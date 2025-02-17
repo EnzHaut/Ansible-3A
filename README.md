@@ -341,7 +341,6 @@ target03 | SUCCESS => {
    [testlab:vars]
    ansible_user=vagrant
    ansible_become=True
-   
    ```
 13. **Affichez la première ligne du fichier /etc/shadow sur tous les Target Hosts** : 
    ```sh
@@ -362,6 +361,77 @@ bin:*:19769:0:99999:7:::
 
 ---
 # Partie 4: Ansible par la pratique – Idempotence
+
+1. **Installez successivement les paquets tree, git et nmap sur toutes les cibles** : 
+   ```sh
+   [vagrant@ansible ema]$ ansible testing -m package -a "name=tree,git,nmap state=present"
+   ```
+
+2. **Désinstallez successivement ces trois paquets en utilisant le paramètre supplémentaire state=absent** : 
+   ```sh
+   vagrant@ansible ema]$ ansible testing -m package -a "name=tree,git,nmap state=absent
+   ```
+3. **Copier le fichier /etc/fstab du Control Host vers tous les Target Hosts sous forme d’un fichier /tmp/test3.txt** : 
+   ```sh
+   [vagrant@ansible ema]$ ansible testing -m copy -a "src=/etc/fstab dest=/tmp/test3.txt"
+    debian | CHANGED => {
+    "changed": true,
+    "checksum": "d39263691e31170df199aae3d93f7c556fbb3446",
+    "dest": "/tmp/test3.txt",
+    "gid": 0,
+    "group": "root",
+    "md5sum": "b6f1fe0d790a8d2f9b74b95df1c889dc",
+    "mode": "0644",
+    "owner": "root",
+    "size": 743,
+    "src": "/home/vagrant/.ansible/tmp/ansible-tmp-1739791110.345512-5984-279945349445399/source",
+    "state": "file",
+    "uid": 0
+    }
+    rocky | CHANGED => {
+    "changed": true,
+    "checksum": "d39263691e31170df199aae3d93f7c556fbb3446",
+    "dest": "/tmp/test3.txt",
+    "gid": 0,
+    "group": "root",
+    "md5sum": "b6f1fe0d790a8d2f9b74b95df1c889dc",
+    "mode": "0644",
+    "owner": "root",
+    "secontext": "unconfined_u:object_r:user_home_t:s0",
+    "size": 743,
+    "src": "/home/vagrant/.ansible/tmp/ansible-tmp-1739791110.5364096-5983-105983908901582/source",
+    "state": "file",
+    "uid": 0
+    }
+    suse | CHANGED => {
+    "changed": true,
+    "checksum": "d39263691e31170df199aae3d93f7c556fbb3446",
+    "dest": "/tmp/test3.txt",
+    "gid": 0,
+    "group": "root",
+    "md5sum": "b6f1fe0d790a8d2f9b74b95df1c889dc",
+    "mode": "0644",
+    "owner": "root",
+    "size": 743,
+    "src": "/home/vagrant/.ansible/tmp/ansible-tmp-1739791110.2862656-5985-61319897632026/source",
+    "state": "file",
+    "uid": 0
+   }
+   ```
+
+4. **Enfin, affichez l’espace utilisé par la partition principale sur tous les Target Hosts. Que remarquez-vous ?** : 
+   ```sh
+   [vagrant@ansible ema]$ ansible testing -m shell -a "df -h /"
+   debian | CHANGED | rc=0 >>
+   Filesystem      Size  Used Avail Use% Mounted on
+   /dev/sda3       124G  2.3G  115G   2% /
+   rocky | CHANGED | rc=0 >>
+   Filesystem                  Size  Used Avail Use% Mounted on
+   /dev/mapper/rl_rocky9-root   70G  2.4G   68G   4% /
+   suse | CHANGED | rc=0 >>
+   Filesystem      Size  Used Avail Use% Mounted on
+   /dev/sda3       124G  2.8G  118G   3% /
+   ```
 
 ---
 # Partie 5: Ansible par la pratique – Playbooks
