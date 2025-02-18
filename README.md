@@ -8,6 +8,8 @@
 3. [Partie 3: Ansible par la pratique – Configuration de base](##partie-3--ansible-par-la-pratique--configuration-de-base)
 4. [Partie 4: Ansible par la pratique – Idempotence](##partie-4--ansible-par-la-pratique--Idempotence)
 5. [Partie 5: Ansible par la pratique – Playbooks](##partie-5--ansible-par-la-pratique--Playbooks)
+6. [Partie 6: Ansible par la pratique – Handler](##partie-6--ansible-par-la-pratique--Handler)
+7. [Partie 7: Ansible par la pratique – Variables](##partie-7--ansible-par-la-pratique--Variables)
 ---
 # Partie 1: Ansible par la Pratique – Installation
 
@@ -554,7 +556,7 @@ Vérification que c'est bien up :
   </body>
 </html>
    ```
-4. **Playbook apache-suse :** : 
+5. **Playbook apache-suse :** : 
    ```sh
    [[vagrant@ansible ema]$ cat apache-suse.yml 
    ---
@@ -601,5 +603,278 @@ Vérification que c'est bien up :
   </body>
 </html>
    ```
+---
+# Partie 6: Ansible par la pratique – Handler
 
+---
+# Partie 7: Ansible par la pratique – Variables
+
+1. **Écrivez un playbook myvars1.yml qui affiche respectivement votre voiture et votre moto préférée en utilisant le module debug et deux variables mycar et mybike définies en tant que play vars** : 
+   ```sh
+   [vagrant@ansible playbooks]$ cat myvars1.yml
+   ---
+   - name: Afficher voiture et moto préférées
+   hosts: localhost
+   vars:
+    mycar: "Tesla Model S"
+    mybike: "Ducati Panigale"
+   tasks:
+    - name: Afficher la voiture préférée
+      debug:
+        msg: "Ma voiture préférée est {{ mycar }}."
+
+    - name: Afficher la moto préférée
+      debug:
+        msg: "Ma moto préférée est {{ mybike }}."
+
+   ```
+Voici le résultat que j'obtiens :
+```sh
+[vagrant@ansible playbooks]$ ansible-playbook myvars1.yml 
+
+PLAY [Afficher voiture et moto préférées] **************************************************************************
+
+TASK [Gathering Facts] *********************************************************************************************
+ok: [localhost]
+
+TASK [Afficher la voiture préférée] ********************************************************************************
+ok: [localhost] => {
+    "msg": "Ma voiture préférée est Tesla Model S."
+}
+
+TASK [Afficher la moto préférée] ***********************************************************************************
+ok: [localhost] => {
+    "msg": "Ma moto préférée est Ducati Panigale."
+}
+
+PLAY RECAP *********************************************************************************************************
+localhost                  : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0  
+```
+
+2. **En utilisant les extra vars, remplacez successivement l’une et l’autre marque – puis les deux à la fois – avant d’exécuter le play** : 
+```sh
+[vagrant@ansible playbooks]$ ansible-playbook myvars1.yml --extra-vars "mycar=Ferrari mybike=Harley-Davidson"
+
+PLAY [Afficher voiture et moto préférées] **************************************************************************
+
+TASK [Gathering Facts] *********************************************************************************************
+ok: [localhost]
+
+TASK [Afficher la voiture préférée] ********************************************************************************
+ok: [localhost] => {
+    "msg": "Ma voiture préférée est Ferrari."
+}
+
+TASK [Afficher la moto préférée] ***********************************************************************************
+ok: [localhost] => {
+    "msg": "Ma moto préférée est Harley-Davidson."
+}
+
+PLAY RECAP *********************************************************************************************************
+localhost                  : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0  
+```
+
+3. **Écrivez un playbook myvars2.yml qui fait essentiellement la même chose que myvars1.yml, mais en utilisant une tâche avec set_fact pour définir les deux variables** : 
+```sh
+[vagrant@ansible playbooks]$ cat myvars2.yml 
+---
+- name: Afficher voiture et moto préférées avec set_fact
+  hosts: localhost
+  tasks:
+    - name: Définir les variables mycar et mybike
+      set_fact:
+        mycar: "Tesla Model S"
+        mybike: "Ducati Panigale"
+
+    - name: Afficher la voiture préférée
+      debug:
+        msg: "Ma voiture préférée est {{ mycar }}."
+
+    - name: Afficher la moto préférée
+      debug:
+        msg: "Ma moto préférée est {{ mybike }}."
+```
+Le résulat :
+```sh
+[vagrant@ansible playbooks]$ cat myvars2.yml 
+---
+- name: Afficher voiture et moto préférées avec set_fact
+  hosts: localhost
+  tasks:
+    - name: Définir les variables mycar et mybike
+      set_fact:
+        mycar: "Tesla Model S"
+        mybike: "Ducati Panigale"
+
+    - name: Afficher la voiture préférée
+      debug:
+        msg: "Ma voiture préférée est {{ mycar }}."
+
+    - name: Afficher la moto préférée
+      debug:
+        msg: "Ma moto préférée est {{ mybike }}."
+```
+
+4. **Là aussi, essayez de remplacer les deux variables en utilisant des extra vars avant l’exécution du play**
+
+```sh
+[vagrant@ansible playbooks]$ ansible-playbook myvars2.yml --extra-vars "mycar=Ferrari mybike=Harley-Davidson"
+
+PLAY [Afficher voiture et moto préférées avec set_fact] ************************************************************
+
+TASK [Gathering Facts] *********************************************************************************************
+ok: [localhost]
+
+TASK [Définir les variables mycar et mybike] ***********************************************************************
+ok: [localhost]
+
+TASK [Afficher la voiture préférée] ********************************************************************************
+ok: [localhost] => {
+    "msg": "Ma voiture préférée est Ferrari."
+}
+
+TASK [Afficher la moto préférée] ***********************************************************************************
+ok: [localhost] => {
+    "msg": "Ma moto préférée est Harley-Davidson."
+}
+
+PLAY RECAP *********************************************************************************************************
+localhost                  : ok=4    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0  
+```
+
+5. **Écrivez un playbook myvars3.yml qui affiche le contenu des deux variables mycar et mybike mais sans les définir. Avant d’exécuter le playbook, définissez VW et BMW comme valeurs par défaut pour mycar et mybike pour tous les hôtes, en utilisant l’endroit approprié**
+
+Tout d'abord je crée le fichier group_vars/all.yml :
+
+```sh
+[vagrant@ansible group_vars]$ cat all.yml 
+---
+mycar: VW
+mybike: BMW
+```
+
+Mon playbook myvars3.yml :
+```sh
+[vagrant@ansible playbooks]$ cat myvars3.yml 
+---
+- name: Afficher voiture et moto préférées sans les définir
+  hosts: localhost
+  tasks:
+    - name: Afficher la voiture préférée
+      debug:
+        msg: "Ma voiture préférée est {{ mycar }}."
+
+    - name: Afficher la moto préférée
+      debug:
+        msg: "Ma moto préférée est {{ mybike }}."
+```
+
+Voici le résultat:
+```sh
+[vagrant@ansible playbooks]$ ansible-playbook myvars3.yml 
+
+PLAY [Afficher voiture et moto préférées sans les définir] *********************************************************
+
+TASK [Gathering Facts] *********************************************************************************************
+ok: [localhost]
+
+TASK [Afficher la voiture préférée] ********************************************************************************
+ok: [localhost] => {
+    "msg": "Ma voiture préférée est VW."
+}
+
+TASK [Afficher la moto préférée] ***********************************************************************************
+ok: [localhost] => {
+    "msg": "Ma moto préférée est BMW."
+}
+
+PLAY RECAP *********************************************************************************************************
+localhost                  : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0  
+```
+
+6. **Effectuez le nécessaire pour remplacer VW et BMW par Mercedes et Honda sur l’hôte target02**
+
+Tout d'abord, je modifie mon fichier inventory:
+```sh
+[vagrant@ansible ema]$ cat inventory 
+[all]
+target01 ansible_host=192.168.56.20
+target02 ansible_host=192.168.56.30 mycar=Mercedes mybike=Honda
+target03 ansible_host=192.168.56.40
+
+[control]
+ansible ansible_host=192.168.56.10
+```
+
+Je relance mon fichier myvars3.yml :
+
+```sh
+[vagrant@ansible playbooks]$ ansible-playbook myvars3.yml
+
+PLAY [all] *********************************************************************************************************
+
+TASK [Display the value of mycar and mybike] ***********************************************************************
+ok: [ansible] => {
+    "msg": "My car is a VW\nMy bike is a BMW\n"
+}
+ok: [target01] => {
+    "msg": "My car is a VW\nMy bike is a BMW\n"
+}
+ok: [target02] => {
+    "msg": "My car is a Mercedes\nMy bike is a Honda\n"
+}
+ok: [target03] => {
+    "msg": "My car is a VW\nMy bike is a BMW\n"
+}
+```
+
+7. **Écrivez un playbook display_user.yml qui affiche un utilisateur et son mot de passe correspondant à l’aide des variables user et password. Ces deux variables devront être saisies de manière interactive pendant l’exécution du playbook. Les valeurs par défaut seront microlinux pour user et yatahongaga pour password. Le mot de passe ne devra pas s’afficher pendant la saisie**
+
+```sh
+[vagrant@ansible playbooks]$ cat display_user.yml 
+---
+- name: Afficher un utilisateur et son mot de passe
+  hosts: localhost
+  gather_facts: false
+
+  vars_prompt:
+    - name: user
+      prompt: "Veuillez entrer le nom d'utilisateur"
+      default: "microlinux"
+      private: false
+
+    - name: password
+      prompt: "Veuillez entrer le mot de passe"
+      default: "yatahongaga"
+      private: true
+
+  tasks:
+    - name: Afficher le nom d'utilisateur et le mot de passe
+      ansible.builtin.debug:
+        msg:
+          - "Nom d'utilisateur : {{ user }}"
+          - "Mot de passe : {{ password }}"
+
+```
+
+Voici le résultat :
+
+```sh
+[vagrant@ansible playbooks]$ ansible-playbook display_user.yml 
+Veuillez entrer le nom d'utilisateur [microlinux]: toto
+Veuillez entrer le mot de passe [yatahongaga]: 
+
+PLAY [Afficher un utilisateur et son mot de passe] *****************************************************************
+
+TASK [Afficher le nom d'utilisateur et le mot de passe] ************************************************************
+ok: [localhost] => {
+    "msg": [
+        "Nom d'utilisateur : toto",
+        "Mot de passe : toto"
+    ]
+}
+
+PLAY RECAP *********************************************************************************************************
+localhost                  : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0  
+```
 
