@@ -1420,3 +1420,131 @@ ubuntu                     : ok=4    changed=0    unreachable=0    failed=0    s
 ---
 # Partie 11: Ansible par la pratique – Jinja & Templates
 
+ 1. **Création du template** :
+```sh
+[vagrant@ansible templates]$ cat chrony.conf.j2 
+# {{ chrony_conf_path }}
+server 0.fr.pool.ntp.org iburst
+server 1.fr.pool.ntp.org iburst
+server 2.fr.pool.ntp.org iburst
+server 3.fr.pool.ntp.org iburst
+driftfile /var/lib/chrony/drift
+makestep 1.0 3
+rtcsync
+logdir /var/log/chrony
+```
+
+2. **Création du fichier qui contient les variables**
+```sh
+[vagrant@ansible vars]$ cat chrony_vars.yml 
+---
+chrony_package:
+  Debian: chrony
+  RedHat: chrony
+  Suse: chrony
+
+chrony_service:
+  Debian: chrony
+  RedHat: chronyd
+  Suse: chronyd
+
+chrony_conf_path:
+  Debian: /etc/chrony/chrony.conf
+  RedHat: /etc/chrony.conf
+  Suse: /etc/chrony.conf
+```
+
+3. **Création du playbook :**
+
+```sh
+[vagrant@ansible playbooks]$ cat chrony.yml 
+---
+- hosts: all
+  become: true
+  vars_files:
+    - vars/chrony_vars.yml
+  tasks:
+    - name: Install Chrony
+      package:
+        name: "{{ chrony_package[ansible_os_family] }}"
+        state: present
+
+    - name: Start and enable Chrony service
+      service:
+        name: "{{ chrony_service[ansible_os_family] }}"
+        state: started
+        enabled: true
+
+    - name: Configure Chrony
+      template:
+        src: templates/chrony.conf.j2
+        dest: "{{ chrony_conf_path[ansible_os_family] }}"
+      notify: Restart Chrony
+
+  handlers:
+    - name: Restart Chrony
+      service:
+        name: "{{ chrony_service[ansible_os_family] }}"
+        state: restarted
+```
+
+4. **Execution du playbook :**
+```sh
+vagrant@ansible playbooks]$ ansible-playbook chrony.yml 
+
+vagrant@ansible playbooks]$ ansible-playbook chrony.yml 
+
+PLAY [all] *********************************************************************************************************
+
+TASK [Gathering Facts] *********************************************************************************************
+ok: [debian]
+ok: [rocky]
+ok: [suse]
+ok: [ubuntu]
+
+TASK [Install Chrony] **********************************************************************************************
+ok: [debian]
+ok: [suse]
+ok: [ubuntu]
+ok: [rocky]
+
+TASK [Start and enable Chrony service] *****************************************************************************
+ok: [ubuntu]
+ok: [debian]
+ok: [suse]
+ok: [rocky]
+
+TASK [Configure Chrony] ********************************************************************************************
+changed: [debian]
+changed: [suse]
+changed: [ubuntu]
+changed: [rocky]
+
+RUNNING HANDLER [Restart Chrony] ***********************************************************************************
+changed: [ubuntu]
+changed: [debian]
+changed: [suse]
+changed: [rocky]
+
+PLAY RECAP *********************************************************************************************************
+debian                     : ok=5    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+rocky                      : ok=5    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+suse                       : ok=5    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+ubuntu                     : ok=5    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0  
+```
+
+5. **Vérification de la config:**
+```sh
+[vagrant@ansible playbooks]$ ssh rocky
+Last login: Wed Feb 19 15:35:58 2025 from 192.168.56.10
+[vagrant@rocky ~]$ cat /etc/chrony.conf
+# {'Debian': '/etc/chrony/chrony.conf', 'RedHat': '/etc/chrony.conf', 'Suse': '/etc/chrony.conf'}
+server 0.fr.pool.ntp.org iburst
+server 1.fr.pool.ntp.org iburst
+server 2.fr.pool.ntp.org iburst
+server 3.fr.pool.ntp.org iburst
+driftfile /var/lib/chrony/drift
+makestep 1.0 3
+rtcsync
+logdir /var/log/chrony
+```
