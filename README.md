@@ -13,6 +13,7 @@
 8. [Partie 8: Ansible par la pratique – Variables enregistrées](##partie-8--ansible-par-la-pratique--Variables-enregistrees)
 9. [Partie 9: Ansible par la pratique – Facts et variables implicites](##partie-9--ansible-par-la-pratique--Facts-et-variables-implicites)
 10. [Partie 10: Ansible par la pratique – Cibles heterogenes](##partie-10--ansible-par-la-pratique--Cibles-heterogenes)
+11. [Partie 11: Ansible par la pratique – Jinja & Templates](##partie-11--ansible-par-la-pratique--Jinja-&-templates)
 ---
 # Partie 1: Ansible par la Pratique – Installation
 
@@ -1242,4 +1243,180 @@ suse                       : ok=2    changed=0    unreachable=0    failed=0    s
 ---
 # Partie 10: Ansible par la pratique – Cibles heterogenes
 
+1. **Le premier playbook chrony-01.yml utilisera les modules de gestion de paquets natifs apt, dnf et zypper et s’inspirera de la méthode « gros sabots » utilisée plus haut dans cet article**
+
+```sh
+[vagrant@ansible playbooks]$ cat chrony.yml 
+---
+- name: Setup Chrony using native package managers
+  hosts: all
+
+  tasks:
+    - name: Install Chrony on Debian/Ubuntu
+      apt:
+        name: chrony
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Install Chrony on Rocky Linux
+      dnf:
+        name: chrony
+        state: present
+      when: ansible_distribution == "Rocky"
+
+    - name: Install Chrony on SUSE Linux
+      zypper:
+        name: chrony
+        state: present
+      when: ansible_distribution == "openSUSE Leap"
+
+    - name: Enable and start Chrony service on Debian/Ubuntu
+      service:
+        name: chrony
+        enabled: yes
+        state: started
+      when: ansible_os_family == "Debian"
+
+    - name: Enable and start Chrony service on Rocky Linux
+      service:
+        name: chronyd
+        enabled: yes
+        state: started
+      when: ansible_distribution == "Rocky"
+
+    - name: Enable and start Chrony service on SUSE Linux
+      service:
+        name: chronyd
+        enabled: yes
+        state: started
+      when: ansible_distribution == "openSUSE Leap"
+
+    - name: Configure Chrony
+      copy:
+        dest: /etc/chrony/chrony.conf
+        content: |
+          server 0.fr.pool.ntp.org iburst
+          server 1.fr.pool.ntp.org iburst
+          server 2.fr.pool.ntp.org iburst
+          server 3.fr.pool.ntp.org iburst
+          driftfile /var/lib/chrony/drift
+          makestep 1.0 3
+          rtcsync
+          logdir /var/log/chrony
+      notify: Restart Chrony
+
+  handlers:
+    - name: Restart Chrony
+      service:
+        name: "{{ 'chrony' if ansible_os_family == 'Debian' else 'chronyd' }}"
+        state: restarted
+```
+
+2. **Le deuxième playbook chrony-02.yml définira trois variables chrony_package, chrony_service et chrony_confdir et utilisera le module de gestion de paquets générique package**
+```sh
+[vagrant@ansible playbooks]$ cat chrony-02.yml 
+--- # chrony-02.yml
+- hosts: all
+  gather_facts: true  # Collecte des informations sur l'OS
+
+  vars:
+    chrony_package: chrony
+    chrony_service: chronyd
+    chrony_confdir: >-
+      {{ '/etc/chrony' if ansible_os_family in ['Debian', 'RedHat'] else '/etc/chrony.d' }}
+
+  tasks:
+    - name: Vérifier si ansible_os_family est défini
+      fail:
+        msg: "La variable ansible_os_family est indéfinie. Assurez-vous que gather_facts est activé."
+      when: ansible_os_family is not defined
+
+    - name: Installer Chrony (toutes distributions)
+      package:
+        name: "{{ chrony_package }}"
+        state: present
+
+    - name: Assurer l'existence du dossier de configuration Chrony
+      file:
+        path: "{{ chrony_confdir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Copier la configuration Chrony (en dur dans le YAML)
+      copy:
+        dest: "{{ chrony_confdir }}/chrony.conf"
+        content: |
+          server 0.fr.pool.ntp.org iburst
+          server 1.fr.pool.ntp.org iburst
+          server 2.fr.pool.ntp.org iburst
+          server 3.fr.pool.ntp.org iburst
+
+          driftfile /var/lib/chrony/drift
+          makestep 1.0 3
+          rtcsync
+          logdir /var/log/chrony
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Redémarrer Chrony
+
+  handlers:
+    - name: Redémarrer Chrony
+      service:
+        name: "{{ chrony_service }}"
+        state: restarted
+        enabled: true
+```
+
+Execution de mon playbook :
+
+```sh
+[vagrant@ansible playbooks]$ ansible-playbook chrony-02.yml 
+
+PLAY [all] *********************************************************************************************************
+
+TASK [Gathering Facts] *********************************************************************************************
+ok: [debian]
+ok: [rocky]
+ok: [suse]
+ok: [ubuntu]
+
+TASK [Vérifier si ansible_os_family est défini] ********************************************************************
+skipping: [rocky]
+skipping: [debian]
+skipping: [suse]
+skipping: [ubuntu]
+
+TASK [Installer Chrony (toutes distributions)] *********************************************************************
+ok: [suse]
+ok: [ubuntu]
+ok: [rocky]
+changed: [debian]
+
+TASK [Assurer l'existence du dossier de configuration Chrony] ******************************************************
+ok: [ubuntu]
+ok: [debian]
+ok: [rocky]
+ok: [suse]
+
+TASK [Copier la configuration Chrony (en dur dans le YAML)] ********************************************************
+ok: [ubuntu]
+changed: [debian]
+ok: [rocky]
+ok: [suse]
+
+RUNNING HANDLER [Redémarrer Chrony] ********************************************************************************
+changed: [debian]
+
+PLAY RECAP *********************************************************************************************************
+debian                     : ok=5    changed=3    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+rocky                      : ok=4    changed=0    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+suse                       : ok=4    changed=0    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+ubuntu                     : ok=4    changed=0    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0  
+```
+
+---
+# Partie 11: Ansible par la pratique – Jinja & Templates
 
