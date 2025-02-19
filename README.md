@@ -1113,6 +1113,132 @@ suse                       : ok=3    changed=0    unreachable=0    failed=0    s
 ---
 # Partie 9: Ansible par la pratique – Facts et variables implicites
 
+Écrivez trois playbooks pour afficher des informations sur chacun des Target Hosts :
+
+1. **Ecrire pkg-info.yml pour afficher le gestionnaire de paquets utilisé**
+```sh
+[vagrant@ansible playbooks]$ cat pkg-info.yml 
+---
+- name: Display package manager information
+  hosts: all
+
+  tasks:
+    - name: Show package manager
+      debug:
+        msg: "The package manager on {{ inventory_hostname }} is {{ ansible_pkg_mgr }}"
+
+```
+
+Le résultat est :
+```sh
+[vagrant@ansible playbooks]$ ansible-playbook pkg-info.yml 
+
+PLAY [Display package manager information] *************************************************************************
+
+TASK [Gathering Facts] *********************************************************************************************
+ok: [rocky]
+ok: [debian]
+ok: [suse]
+
+TASK [Show package manager] ****************************************************************************************
+ok: [rocky] => {
+    "msg": "The package manager on rocky is dnf"
+}
+ok: [debian] => {
+    "msg": "The package manager on debian is apt"
+}
+ok: [suse] => {
+    "msg": "The package manager on suse is zypper"
+}
+
+PLAY RECAP *********************************************************************************************************
+debian                     : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+rocky                      : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+suse                       : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0 
+```
+
+2. **Ecrire python-info.yml pour afficher la version de Python installée**
+```sh
+---
+- name: Display Python version information
+  hosts: all
+
+  tasks:
+    - name: Show Python version
+      debug:
+        msg: "The Python version on {{ inventory_hostname }} is {{ ansible_python_version }}"
+```
+
+Le résultat est :
+```sh
+[vagrant@ansible playbooks]$ ansible-playbook python-info.yml 
+
+PLAY [Display Python version information] **************************************************************************
+
+TASK [Gathering Facts] *********************************************************************************************
+ok: [debian]
+ok: [rocky]
+ok: [suse]
+
+TASK [Show Python version] *****************************************************************************************
+ok: [rocky] => {
+    "msg": "The Python version on rocky is 3.9.18"
+}
+ok: [debian] => {
+    "msg": "The Python version on debian is 3.11.2"
+}
+ok: [suse] => {
+    "msg": "The Python version on suse is 3.6.15"
+}
+
+PLAY RECAP *********************************************************************************************************
+debian                     : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+rocky                      : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+suse                       : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0  
+```
+
+3. **Ecrire dns-info.yml pour afficher le(s) serveur(s) DNS utilisé(s)**
+```sh
+[vagrant@ansible playbooks]$ cat dns-info.yml 
+---
+- name: Display DNS server information
+  hosts: all
+
+  tasks:
+    - name: Show DNS servers
+      debug:
+        msg: "The DNS servers on {{ inventory_hostname }} are {{ ansible_dns.nameservers }}"
+```
+
+Le résultat est :
+
+```sh
+[vagrant@ansible playbooks]$ ansible-playbook dns-info.yml 
+
+PLAY [Display DNS server information] ******************************************************************************
+
+TASK [Gathering Facts] *********************************************************************************************
+ok: [debian]
+ok: [rocky]
+ok: [suse]
+
+TASK [Show DNS servers] ********************************************************************************************
+ok: [rocky] => {
+    "msg": "The DNS servers on rocky are ['10.0.2.3']"
+}
+ok: [debian] => {
+    "msg": "The DNS servers on debian are ['4.2.2.1', '4.2.2.2', '208.67.220.220']"
+}
+ok: [suse] => {
+    "msg": "The DNS servers on suse are ['10.0.2.3']"
+}
+
+PLAY RECAP *********************************************************************************************************
+debian                     : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+rocky                      : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+suse                       : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0  
+```
+
 ---
 # Partie 10: Ansible par la pratique – Cibles heterogenes
 
