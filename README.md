@@ -10,8 +10,9 @@
 5. [Partie 5: Ansible par la pratique – Playbooks](##partie-5--ansible-par-la-pratique--Playbooks)
 6. [Partie 6: Ansible par la pratique – Handler](##partie-6--ansible-par-la-pratique--Handler)
 7. [Partie 7: Ansible par la pratique – Variables](##partie-7--ansible-par-la-pratique--Variables)
-8. [Partie 8: Ansible par la pratique – Variables enregistrées](##partie-7--ansible-par-la-pratique--Variables-enregistrees)
-9. [Partie 9: Ansible par la pratique – Facts et variables implicites](##partie-7--ansible-par-la-pratique--Facts-et-variables-implicites)
+8. [Partie 8: Ansible par la pratique – Variables enregistrées](##partie-8--ansible-par-la-pratique--Variables-enregistrees)
+9. [Partie 9: Ansible par la pratique – Facts et variables implicites](##partie-9--ansible-par-la-pratique--Facts-et-variables-implicites)
+10. [Partie 10: Ansible par la pratique – Cibles heterogenes](##partie-10--ansible-par-la-pratique--Cibles-heterogenes)
 ---
 # Partie 1: Ansible par la Pratique – Installation
 
@@ -1111,4 +1112,8 @@ suse                       : ok=3    changed=0    unreachable=0    failed=0    s
 
 ---
 # Partie 9: Ansible par la pratique – Facts et variables implicites
+
+---
+# Partie 10: Ansible par la pratique – Cibles heterogenes
+
 
