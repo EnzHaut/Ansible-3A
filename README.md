@@ -11,6 +11,7 @@
 6. [Partie 6: Ansible par la pratique – Handler](##partie-6--ansible-par-la-pratique--Handler)
 7. [Partie 7: Ansible par la pratique – Variables](##partie-7--ansible-par-la-pratique--Variables)
 8. [Partie 8: Ansible par la pratique – Variables enregistrées](##partie-7--ansible-par-la-pratique--Variables-enregistrees)
+9. [Partie 9: Ansible par la pratique – Facts et variables implicites](##partie-7--ansible-par-la-pratique--Facts-et-variables-implicites)
 ---
 # Partie 1: Ansible par la Pratique – Installation
 
@@ -44,7 +45,7 @@
    vagrant@ubuntu:~$ ansible --version
    ansible 2.10.8
    ```
-8. **Déconnectez-vous et supprimez la VM.** :
+7. **Déconnectez-vous et supprimez la VM.** :
    ```sh
    vagrant@ubuntu:~$ exit
    logout
@@ -607,6 +608,83 @@ Vérification que c'est bien up :
 ---
 # Partie 6: Ansible par la pratique – Handler
 
+1. **Écrivez un playbook chrony.yml qui assure la synchronisation NTP de tous vos Target Hosts** : 
+```sh
+[vagrant@control playbooks]$ cat chrony.yml 
+---
+- name: Configure NTP with chrony
+  hosts: redhat
+  become: yes
+
+  tasks:
+    - name: Install chrony package
+      yum:
+        name: chrony
+        state: present
+
+    - name: Enable and start chronyd service
+      service:
+        name: chronyd
+        enabled: yes
+        state: started
+
+    - name: Install custom chrony configuration
+      copy:
+        dest: /etc/chrony.conf
+        content: |
+          server 0.fr.pool.ntp.org iburst
+          server 1.fr.pool.ntp.org iburst
+          server 2.fr.pool.ntp.org iburst
+          server 3.fr.pool.ntp.org iburst
+          driftfile /var/lib/chrony/drift
+          makestep 1.0 3
+          rtcsync
+          logdir /var/log/chrony
+      notify: Restart chronyd
+
+  handlers:
+    - name: Restart chronyd
+      service:
+        name: chronyd
+        state: restarted
+```
+
+2. **Vérifiez la syntaxe correcte de votre playbook chrony.yml**
+```sh
+[vagrant@control playbooks]$ yamllint chrony.yml
+```
+
+3. **Vérifiez l’idempotence de votre playbook**
+```sh
+[vagrant@control playbooks]$ ansible-playbook chrony.yml 
+
+PLAY [Configure NTP with chrony] ***********************************************************************************
+
+TASK [Gathering Facts] *********************************************************************************************
+ok: [target03]
+ok: [target01]
+ok: [target02]
+
+TASK [Install chrony package] **************************************************************************************
+ok: [target01]
+ok: [target03]
+ok: [target02]
+
+TASK [Enable and start chronyd service] ****************************************************************************
+ok: [target03]
+ok: [target01]
+ok: [target02]
+
+TASK [Install custom chrony configuration] *************************************************************************
+ok: [target02]
+ok: [target01]
+ok: [target03]
+
+PLAY RECAP *********************************************************************************************************
+target01                   : ok=4    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+target02                   : ok=4    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+target03                   : ok=4    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0 
+```
 ---
 # Partie 7: Ansible par la pratique – Variables
 
@@ -1030,3 +1108,7 @@ debian                     : ok=1    changed=0    unreachable=0    failed=0    s
 rocky                      : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
 suse                       : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0  
 ```
+
+---
+# Partie 9: Ansible par la pratique – Facts et variables implicites
+
